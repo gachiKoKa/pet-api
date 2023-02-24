@@ -7,10 +7,12 @@ import {
   CreateUserDto,
   GetUsersDto,
   UpdateUserDto,
+  User,
   UserMapper,
   UserRepository,
   UserResponseDto,
 } from '@shared';
+import { FindOneOptions } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -42,11 +44,7 @@ export class UserService {
   }
 
   public async getOne(id: number): Promise<UserResponseDto> {
-    const user = await this._userRepository.findOne({ where: { id } });
-
-    if (!user) {
-      throw new NotFoundException();
-    }
+    const user = await this._findOne({ where: { id } });
 
     return this._userMapper.mapToResponse(user);
   }
@@ -55,7 +53,7 @@ export class UserService {
     id: number,
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    const user = await this.getOne(id);
+    const user = await this._findOne({ where: { id } });
     let updatedEntity = this._userRepository.create({
       ...user,
       ...updateUserDto,
@@ -69,5 +67,15 @@ export class UserService {
     }
 
     return this._userMapper.mapToResponse(updatedEntity);
+  }
+
+  private async _findOne(options: FindOneOptions<User>): Promise<User> {
+    const user = await this._userRepository.findOne(options);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user;
   }
 }
