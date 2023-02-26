@@ -90,7 +90,7 @@ describe('UserService', () => {
       expect(actualResult).toEqual(user);
     });
 
-    it('should throw BadRequestException', async () => {
+    it('should throw exception during save user operation', async () => {
       userRepoSaveException = true;
       const actualResult = userService.create({
         firstName: 'test',
@@ -112,14 +112,14 @@ describe('UserService', () => {
       expect(actualResult).toEqual(user);
     });
 
-    it('should throw NotFoundException', async () => {
+    it('should throw exception when user not found', async () => {
       userRepoFindException = true;
       const actualResult = userService.update(1, { lastName: 'jest' });
 
       await expect(actualResult).rejects.toThrowError(NotFoundException);
     });
 
-    it('should throw BadRequestException', async () => {
+    it('should throw exception during update user operation', async () => {
       userRepoSaveException = true;
       const actualResult = userService.update(1, { lastName: 'jest' });
 
@@ -148,7 +148,7 @@ describe('UserService', () => {
       expect(actualResult).toEqual(user);
     });
 
-    it('should throw NotFoundException', async () => {
+    it('should throw exception when user not found', async () => {
       userRepoFindException = true;
       const actualResult = userService.getOne(1);
 

@@ -29,11 +29,12 @@ describe('UserMapper', () => {
 
   describe('mapToResponse', () => {
     it('should map user entity to response', () => {
+      const actualResult = { ...user } as User;
       // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
       const { uuid, createdAt, updatedAt, ...userData } = user;
       userData.phoneNumber = transformedPhoneNumber;
 
-      expect(userMapper.mapToResponse(user)).toEqual(userData);
+      expect(userMapper.mapToResponse(actualResult)).toEqual(userData);
     });
   });
 });
