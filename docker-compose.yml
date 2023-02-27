@@ -6,3 +6,19 @@ services:
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - default
+  api:
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    networks:
+      - default
+    depends_on:
+      - db
+
+networks:
+  default:
