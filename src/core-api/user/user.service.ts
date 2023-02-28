@@ -5,14 +5,13 @@ import {
 } from '@nestjs/common';
 import {
   CreateUserDto,
-  GetUsersDto,
   UpdateUserDto,
   User,
   UserMapper,
   UserRepository,
   UserResponseDto,
 } from '@shared';
-import { FindOneOptions } from 'typeorm';
+import { FindManyOptions, FindOneOptions } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -34,17 +33,14 @@ export class UserService {
     return this._userMapper.mapToResponse(newEntity);
   }
 
-  public async get(getUsersDto: GetUsersDto): Promise<UserResponseDto[]> {
-    const users = await this._userRepository.find({
-      skip: getUsersDto?.offset ?? 0,
-      take: (getUsersDto?.limit > 0 && getUsersDto?.limit) || 20,
-    });
+  public async get(options: FindManyOptions<User>): Promise<UserResponseDto[]> {
+    const users = await this._userRepository.find(options);
 
     return users.map((user) => this._userMapper.mapToResponse(user));
   }
 
-  public async getOne(id: number): Promise<UserResponseDto> {
-    const user = await this._findOne({ where: { id } });
+  public async getOne(options: FindOneOptions<User>): Promise<UserResponseDto> {
+    const user = await this._findOne(options);
 
     return this._userMapper.mapToResponse(user);
   }

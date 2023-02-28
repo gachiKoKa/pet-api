@@ -23,14 +23,17 @@ export class UserController {
 
   @Get()
   public get(@Query() getUsersDto: GetUsersDto): Promise<UserResponseDto[]> {
-    return this._userService.get(getUsersDto);
+    return this._userService.get({
+      skip: getUsersDto?.offset ?? 0,
+      take: (getUsersDto?.limit > 0 && getUsersDto?.limit) || 20,
+    });
   }
 
   @Get(':id')
   public getOne(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<UserResponseDto> {
-    return this._userService.getOne(id);
+    return this._userService.getOne({ where: { id } });
   }
 
   @Post()
