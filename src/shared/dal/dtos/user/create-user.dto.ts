@@ -14,4 +14,8 @@ export class CreateUserDto {
 
   @IsMobilePhone('uk-UA')
   public phoneNumber: string;
+
+  @IsString()
+  @IsNotEmpty()
+  public password: string;
 }

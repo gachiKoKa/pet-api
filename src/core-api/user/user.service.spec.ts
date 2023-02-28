@@ -85,6 +85,7 @@ describe('UserService', () => {
         lastName: 'case',
         email: 'test@test.com',
         phoneNumber: '+380961231212',
+        password: 'test',
       });
 
       expect(actualResult).toEqual(user);
@@ -97,6 +98,7 @@ describe('UserService', () => {
         lastName: 'case',
         email: 'test@test.com',
         phoneNumber: '+380961231212',
+        password: 'test',
       });
 
       await expect(actualResult).rejects.toThrowError(BadRequestException);
