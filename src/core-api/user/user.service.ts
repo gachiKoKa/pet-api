@@ -9,7 +9,6 @@ import {
   User,
   UserMapper,
   UserRepository,
-  UserResponseDto,
 } from '@shared';
 import { FindManyOptions, FindOneOptions } from 'typeorm';
 
@@ -20,7 +19,7 @@ export class UserService {
     private readonly _userMapper: UserMapper,
   ) {}
 
-  public async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  public async create(createUserDto: CreateUserDto): Promise<Partial<User>> {
     let newEntity = this._userRepository.create(createUserDto);
 
     try {
@@ -33,13 +32,13 @@ export class UserService {
     return this._userMapper.mapToResponse(newEntity);
   }
 
-  public async get(options: FindManyOptions<User>): Promise<UserResponseDto[]> {
+  public async get(options: FindManyOptions<User>): Promise<Partial<User>[]> {
     const users = await this._userRepository.find(options);
 
     return users.map((user) => this._userMapper.mapToResponse(user));
   }
 
-  public async getOne(options: FindOneOptions<User>): Promise<UserResponseDto> {
+  public async getOne(options: FindOneOptions<User>): Promise<Partial<User>> {
     const user = await this._findOne(options);
 
     return this._userMapper.mapToResponse(user);
@@ -48,7 +47,7 @@ export class UserService {
   public async update(
     id: number,
     updateUserDto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
+  ): Promise<Partial<User>> {
     const user = await this._findOne({ where: { id } });
     let updatedEntity = this._userRepository.create({
       ...user,

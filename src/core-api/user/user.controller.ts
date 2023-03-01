@@ -8,12 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import {
-  CreateUserDto,
-  GetUsersDto,
-  UpdateUserDto,
-  UserResponseDto,
-} from '@shared';
+import { CreateUserDto, GetUsersDto, UpdateUserDto, User } from '@shared';
 
 import { UserService } from './user.service';
 
@@ -22,7 +17,7 @@ export class UserController {
   constructor(private readonly _userService: UserService) {}
 
   @Get()
-  public get(@Query() getUsersDto: GetUsersDto): Promise<UserResponseDto[]> {
+  public get(@Query() getUsersDto: GetUsersDto): Promise<Partial<User>[]> {
     return this._userService.get({
       skip: getUsersDto?.offset ?? 0,
       take: (getUsersDto?.limit > 0 && getUsersDto?.limit) || 20,
@@ -30,16 +25,14 @@ export class UserController {
   }
 
   @Get(':id')
-  public getOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<UserResponseDto> {
+  public getOne(@Param('id', ParseIntPipe) id: number): Promise<Partial<User>> {
     return this._userService.getOne({ where: { id } });
   }
 
   @Post()
   public async create(
     @Body() createUserDto: CreateUserDto,
-  ): Promise<UserResponseDto> {
+  ): Promise<Partial<User>> {
     return this._userService.create(createUserDto);
   }
 
@@ -47,7 +40,7 @@ export class UserController {
   public async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
+  ): Promise<Partial<User>> {
     return this._userService.update(id, updateUserDto);
   }
 }
