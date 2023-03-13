@@ -8,13 +8,22 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { CreateUserDto, GetUsersDto, UpdateUserDto, User } from '@shared';
+import {
+  CreateUserDto,
+  GetUsersDto,
+  UpdateUserDto,
+  User,
+  UserMapper,
+} from '@shared';
 
 import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly _userService: UserService) {}
+  constructor(
+    private readonly _userService: UserService,
+    private readonly _userMapper: UserMapper,
+  ) {}
 
   @Get()
   public get(@Query() getUsersDto: GetUsersDto): Promise<Partial<User>[]> {
@@ -33,7 +42,9 @@ export class UserController {
   public async create(
     @Body() createUserDto: CreateUserDto,
   ): Promise<Partial<User>> {
-    return this._userService.create(createUserDto);
+    return this._userMapper.mapToResponse(
+      await this._userService.create(createUserDto),
+    );
   }
 
   @Patch(':id')
@@ -41,6 +52,8 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<Partial<User>> {
-    return this._userService.update(id, updateUserDto);
+    return this._userMapper.mapToResponse(
+      await this._userService.update(id, updateUserDto),
+    );
   }
 }
