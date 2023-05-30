@@ -19,6 +19,13 @@ services:
       - default
     depends_on:
       - db
+  redis:
+    build:
+      context: deployment/redis
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    networks:
+      - default
 
 networks:
   default:

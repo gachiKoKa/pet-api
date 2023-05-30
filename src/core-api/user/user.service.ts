@@ -3,15 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto, User, UserRepository } from '@shared';
-import { FindManyOptions, FindOneOptions } from 'typeorm';
+import { UpdateUserDto, User, UserRepository } from '@shared';
+import { DeepPartial, FindManyOptions, FindOneOptions } from 'typeorm';
 
 @Injectable()
 export class UserService {
   constructor(private readonly _userRepository: UserRepository) {}
 
-  public async create(createUserDto: CreateUserDto): Promise<User> {
-    let newEntity = this._userRepository.create(createUserDto);
+  public async create(entityLike: DeepPartial<User>): Promise<User> {
+    let newEntity = this._userRepository.create(entityLike);
 
     try {
       newEntity = await this._userRepository.save(newEntity);

@@ -7,8 +7,10 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  CookieGuard,
   CreateUserDto,
   GetUsersDto,
   UpdateUserDto,
@@ -19,6 +21,7 @@ import {
 import { UserService } from './user.service';
 
 @Controller('user')
+@UseGuards(CookieGuard)
 export class UserController {
   constructor(
     private readonly _userService: UserService,
