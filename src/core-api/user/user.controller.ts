@@ -7,44 +7,56 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  CookieGuard,
   CreateUserDto,
   GetUsersDto,
   UpdateUserDto,
-  UserResponseDto,
+  User,
+  UserMapper,
 } from '@shared';
 
 import { UserService } from './user.service';
 
 @Controller('user')
+@UseGuards(CookieGuard)
 export class UserController {
-  constructor(private readonly _userService: UserService) {}
+  constructor(
+    private readonly _userService: UserService,
+    private readonly _userMapper: UserMapper,
+  ) {}
 
   @Get()
-  public get(@Query() getUsersDto: GetUsersDto): Promise<UserResponseDto[]> {
-    return this._userService.get(getUsersDto);
+  public get(@Query() getUsersDto: GetUsersDto): Promise<Partial<User>[]> {
+    return this._userService.get({
+      skip: getUsersDto?.offset ?? 0,
+      take: (getUsersDto?.limit > 0 && getUsersDto?.limit) || 20,
+    });
   }
 
   @Get(':id')
-  public getOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<UserResponseDto> {
-    return this._userService.getOne(id);
+  public getOne(@Param('id', ParseIntPipe) id: number): Promise<Partial<User>> {
+    return this._userService.getOne({ where: { id } });
   }
 
   @Post()
   public async create(
     @Body() createUserDto: CreateUserDto,
-  ): Promise<UserResponseDto> {
-    return this._userService.create(createUserDto);
+  ): Promise<Partial<User>> {
+    return this._userMapper.mapToResponse(
+      await this._userService.create(createUserDto),
+    );
   }
 
   @Patch(':id')
   public async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
-    return this._userService.update(id, updateUserDto);
+  ): Promise<Partial<User>> {
+    return this._userMapper.mapToResponse(
+      await this._userService.update(id, updateUserDto),
+    );
   }
 }

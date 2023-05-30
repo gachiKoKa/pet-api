@@ -85,6 +85,7 @@ describe('UserService', () => {
         lastName: 'case',
         email: 'test@test.com',
         phoneNumber: '+380961231212',
+        password: 'test',
       });
 
       expect(actualResult).toEqual(user);
@@ -97,6 +98,7 @@ describe('UserService', () => {
         lastName: 'case',
         email: 'test@test.com',
         phoneNumber: '+380961231212',
+        password: 'test',
       });
 
       await expect(actualResult).rejects.toThrowError(BadRequestException);
@@ -129,28 +131,29 @@ describe('UserService', () => {
 
   describe('get', () => {
     it('should be called with correct parameters', async () => {
-      const filter = { limit: 50 } as Partial<GetUsersDto>;
+      const getUsersDto = { limit: 50 } as Partial<GetUsersDto>;
+      const options: FindManyOptions<User> = {
+        skip: 0,
+        take: getUsersDto.limit,
+      };
 
-      await userService.get(filter);
+      await userService.get(options);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(userRepository.find).toBeCalledWith({
-        skip: 0,
-        take: filter.limit,
-      });
+      expect(userRepository.find).toBeCalledWith(options);
     });
   });
 
   describe('getOne', () => {
     it('should return the user', async () => {
-      const actualResult = await userService.getOne(1);
+      const actualResult = await userService.getOne({ where: { id: 1 } });
 
       expect(actualResult).toEqual(user);
     });
 
     it('should throw exception when user not found', async () => {
       userRepoFindException = true;
-      const actualResult = userService.getOne(1);
+      const actualResult = userService.getOne({ where: { id: 1 } });
 
       await expect(actualResult).rejects.toThrowError(NotFoundException);
     });

@@ -1,16 +1,36 @@
-import { User, UserResponseDto } from '@shared';
+import { User } from '@shared';
 import { Injectable } from '@nestjs/common';
+
+type ExcludeFields = (keyof User)[];
+
+const baseExcludeFields: ExcludeFields = [
+  'uuid',
+  'updatedAt',
+  'createdAt',
+  'password',
+];
 
 @Injectable()
 export class UserMapper {
-  public mapToResponse(user: User): UserResponseDto {
-    return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phoneNumber: this._mapPhoneNumber(user.phoneNumber),
-    };
+  public mapToResponse(user: User, exclude = baseExcludeFields): Partial<User> {
+    const mappedUser = {};
+    const userKeys = Object.keys(user) as (keyof User)[];
+
+    for (let i = 0; i < userKeys.length; i++) {
+      if (!exclude.includes(userKeys[i])) {
+        switch (userKeys[i]) {
+          case 'phoneNumber':
+            mappedUser[userKeys[i]] = this._mapPhoneNumber(
+              user[userKeys[i]] as string,
+            );
+            break;
+          default:
+            mappedUser[userKeys[i]] = user[userKeys[i]];
+        }
+      }
+    }
+
+    return mappedUser;
   }
 
   private _mapPhoneNumber(phoneNumber: string): string {
