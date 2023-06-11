@@ -70,25 +70,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 2,
     'no-return-await': 2,
     '@typescript-eslint/return-await': [2, 'in-try-catch' ],
+    '@typescript-eslint/unbound-method': 0,
+    '@typescript-eslint/ban-ts-comment': 0
   },
-  overrides: [
-    {
-      files: ['*.ts'],
-      rules: {
-        '@typescript-eslint/explicit-member-accessibility': [
-          2,
-          {
-            accessibility: 'explicit',
-            overrides: {
-              accessors: 'off',
-              constructors: 'no-public',
-              methods: 'explicit',
-              properties: 'explicit',
-              parameterProperties: 'explicit',
-            },
-          },
-        ],
-      },
-    },
-  ],
 };

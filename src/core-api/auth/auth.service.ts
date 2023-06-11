@@ -20,7 +20,7 @@ export class AuthService {
   ): Promise<User | null> {
     const user = await this._userService.getOne({ where: { email } });
 
-    if (!user || (await bcrypt.compare(password, user.password))) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return null;
     }
 
