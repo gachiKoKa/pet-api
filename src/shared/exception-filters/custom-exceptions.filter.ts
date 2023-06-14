@@ -3,10 +3,12 @@ import { HttpException } from '@nestjs/common';
 import { ExceptionFactory, ExceptionResponse } from './types-and-interfaces';
 
 export class CustomExceptionsFilter implements ExceptionFactory {
-  prepareErrorMessage(error: HttpException): ExceptionResponse {
+  constructor(private readonly _error: HttpException) {}
+
+  prepareErrorMessage(): ExceptionResponse {
     return {
-      code: error.getStatus(),
-      message: error.message,
+      code: this._error.getStatus(),
+      message: this._error.message,
       timestamp: new Date().toISOString(),
       path: undefined,
       method: undefined,

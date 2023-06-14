@@ -12,5 +12,5 @@ export interface ExceptionResponse {
 export type ErrorType = TypeORMError | HttpException;
 
 export interface ExceptionFactory {
-  prepareErrorMessage(error: ErrorType): ExceptionResponse;
+  prepareErrorMessage(): ExceptionResponse;
 }
