@@ -139,7 +139,6 @@ describe('UserService', () => {
 
       await userService.get(options);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(userRepository.find).toBeCalledWith(options);
     });
   });
