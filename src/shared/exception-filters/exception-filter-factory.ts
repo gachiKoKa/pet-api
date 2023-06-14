@@ -1,5 +1,4 @@
 import { TypeORMError } from 'typeorm';
-import { HttpException } from '@nestjs/common';
 
 import { ErrorType, ExceptionFactory } from './types-and-interfaces';
 import { DbExceptionsFilter } from './db-exceptions.filter';
@@ -12,8 +11,6 @@ export class ExceptionFilterFactory {
       return new DbExceptionsFilter(this._error);
     }
 
-    if (this._error instanceof HttpException) {
-      return new CustomExceptionsFilter(this._error);
-    }
+    return new CustomExceptionsFilter(this._error);
   }
 }
