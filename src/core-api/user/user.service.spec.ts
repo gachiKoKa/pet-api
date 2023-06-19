@@ -1,16 +1,19 @@
 import { Test } from '@nestjs/testing';
 import { GetUsersDto, User, UserMapper, UserRepository } from '@shared';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { DeepPartial, FindManyOptions, FindOneOptions } from 'typeorm';
+import { NotFoundException } from '@nestjs/common';
+import {
+  DeepPartial,
+  FindManyOptions,
+  FindOneOptions,
+  TypeORMError,
+} from 'typeorm';
 
 import { UserService } from './user.service';
 
 describe('UserService', () => {
   let userService: UserService;
   let userRepository: UserRepository;
-  let user: User;
-  let userRepoFindException: boolean;
-  let userRepoSaveException: boolean;
+  let userRepositoryOutput: User;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -18,43 +21,10 @@ describe('UserService', () => {
         {
           provide: UserRepository,
           useValue: {
-            find: jest.fn(
-              async (
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                options?: FindManyOptions<User>,
-                // eslint-disable-next-line @typescript-eslint/require-await
-              ): Promise<User[]> => [],
-            ),
-            findOne: jest.fn(
-              async (
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/require-await
-                options: FindOneOptions<User>,
-                // eslint-disable-next-line @typescript-eslint/require-await
-              ): Promise<User> => {
-                if (userRepoFindException) {
-                  throw new NotFoundException();
-                }
-
-                return user;
-              },
-            ),
-            save: jest.fn(
-              async (
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                entity: User,
-                // eslint-disable-next-line @typescript-eslint/require-await
-              ): Promise<User> => {
-                if (userRepoSaveException) {
-                  throw new BadRequestException();
-                }
-
-                return user;
-              },
-            ),
-            create: jest.fn(
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              (entityLike: DeepPartial<User>): User => user,
-            ),
+            find: jest.fn(),
+            findOne: jest.fn(),
+            save: jest.fn(),
+            create: jest.fn(),
           },
         },
         UserService,
@@ -67,92 +37,161 @@ describe('UserService', () => {
   });
 
   beforeEach(() => {
-    userRepoSaveException = false;
-    userRepoFindException = false;
-    user = {
+    userRepositoryOutput = {
       id: 1,
       email: 'test@test.com',
-      phoneNumber: '+38 (096) 123-12-12',
+      phoneNumber: '+380961231212',
       firstName: 'test',
       lastName: 'case',
     } as User;
   });
 
   describe('create', () => {
-    it('should create a new user', async () => {
-      const actualResult = await userService.create({
+    let entityLike: DeepPartial<User>;
+
+    beforeEach(() => {
+      entityLike = {
         firstName: 'test',
         lastName: 'case',
         email: 'test@test.com',
         phoneNumber: '+380961231212',
-      });
+        password: 'test',
+      };
 
-      expect(actualResult).toEqual(user);
+      jest
+        .spyOn(userRepository, 'create')
+        .mockReturnValue(userRepositoryOutput);
+    });
+
+    it('should create a new user', async () => {
+      jest
+
+        .spyOn(userRepository, 'save')
+        .mockResolvedValueOnce(userRepositoryOutput);
+
+      const actualResult = await userService.create(entityLike);
+
+      expect(userRepository.create).toHaveBeenCalledWith(entityLike);
+      expect(userRepository.save).toHaveBeenCalledWith(userRepositoryOutput);
+      expect(actualResult).toEqual(userRepositoryOutput);
     });
 
     it('should throw exception during save user operation', async () => {
-      userRepoSaveException = true;
-      const actualResult = userService.create({
-        firstName: 'test',
-        lastName: 'case',
-        email: 'test@test.com',
-        phoneNumber: '+380961231212',
-      });
+      jest
+        .spyOn(userRepository, 'save')
+        .mockRejectedValueOnce(new TypeORMError());
 
-      await expect(actualResult).rejects.toThrowError(BadRequestException);
+      const actualResult = userService.create(entityLike);
+
+      await expect(actualResult).rejects.toThrowError(TypeORMError);
     });
   });
 
   describe('update', () => {
-    it('should update the user', async () => {
-      const actualResult = await userService.update(1, {
-        lastName: 'jest',
-      });
+    let userId: number;
+    let partEntityToUpdate: DeepPartial<User>;
+    let findOneOptions: FindOneOptions<User>;
+    let updatedEntity: User;
 
-      expect(actualResult).toEqual(user);
+    beforeEach(() => {
+      userId = 1;
+      partEntityToUpdate = { lastName: 'jest' };
+      findOneOptions = { where: { id: userId } };
+      updatedEntity = {
+        ...userRepositoryOutput,
+        ...partEntityToUpdate,
+      } as User;
+
+      jest.spyOn(userRepository, 'create').mockReturnValue(updatedEntity);
+    });
+
+    it('should update the user', async () => {
+      jest
+        .spyOn(userService, 'getOne')
+        .mockResolvedValueOnce(userRepositoryOutput);
+      jest.spyOn(userRepository, 'save').mockResolvedValueOnce(updatedEntity);
+
+      const actualResult = await userService.update(userId, partEntityToUpdate);
+
+      expect(userService.getOne).toHaveBeenCalledWith(findOneOptions);
+      expect(userRepository.create).toHaveBeenCalledWith(updatedEntity);
+      expect(userRepository.save).toHaveBeenCalledWith(updatedEntity);
+      expect(actualResult).toEqual(updatedEntity);
     });
 
     it('should throw exception when user not found', async () => {
-      userRepoFindException = true;
-      const actualResult = userService.update(1, { lastName: 'jest' });
+      jest
+        .spyOn(userService, 'getOne')
+        .mockRejectedValueOnce(new NotFoundException());
 
+      const actualResult = userService.update(userId, partEntityToUpdate);
+
+      expect(userService.getOne).toHaveBeenCalledWith(findOneOptions);
       await expect(actualResult).rejects.toThrowError(NotFoundException);
     });
 
-    it('should throw exception during update user operation', async () => {
-      userRepoSaveException = true;
-      const actualResult = userService.update(1, { lastName: 'jest' });
+    it('should throw an exception during update user operation', async () => {
+      jest
+        .spyOn(userService, 'getOne')
+        .mockResolvedValueOnce(userRepositoryOutput);
+      jest
+        .spyOn(userRepository, 'save')
+        .mockRejectedValueOnce(new TypeORMError());
 
-      await expect(actualResult).rejects.toThrowError(BadRequestException);
+      const actualResult = userService.update(userId, partEntityToUpdate);
+
+      expect(userService.getOne).toHaveBeenCalledWith(findOneOptions);
+      expect(userRepository.create).toHaveBeenCalledWith(updatedEntity);
+      expect(userRepository.save).toHaveBeenCalledWith(updatedEntity);
+      await expect(actualResult).rejects.toThrowError(TypeORMError);
     });
   });
 
   describe('get', () => {
     it('should be called with correct parameters', async () => {
-      const filter = { limit: 50 } as Partial<GetUsersDto>;
-
-      await userService.get(filter);
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(userRepository.find).toBeCalledWith({
+      const getUsersDto = { limit: 50 } as Partial<GetUsersDto>;
+      const options: FindManyOptions<User> = {
         skip: 0,
-        take: filter.limit,
-      });
+        take: getUsersDto.limit,
+      };
+
+      jest
+        .spyOn(userRepository, 'find')
+        .mockResolvedValueOnce([userRepositoryOutput]);
+
+      await userService.get(options);
+
+      expect(userRepository.find).toHaveBeenCalledWith(options);
     });
   });
 
   describe('getOne', () => {
-    it('should return the user', async () => {
-      const actualResult = await userService.getOne(1);
+    let findOneOptions: FindOneOptions<User>;
 
-      expect(actualResult).toEqual(user);
+    beforeEach(() => {
+      findOneOptions = { where: { id: 1 } };
+    });
+
+    it('should return the user', async () => {
+      jest
+        .spyOn(userRepository, 'findOne')
+        .mockResolvedValueOnce(userRepositoryOutput);
+
+      const actualResult = await userService.getOne(findOneOptions);
+
+      expect(userRepository.findOne).toHaveBeenCalledWith(findOneOptions);
+      expect(actualResult).toEqual(userRepositoryOutput);
     });
 
     it('should throw exception when user not found', async () => {
-      userRepoFindException = true;
-      const actualResult = userService.getOne(1);
+      jest
+        .spyOn(userRepository, 'findOne')
+        .mockRejectedValueOnce(new TypeORMError());
 
-      await expect(actualResult).rejects.toThrowError(NotFoundException);
+      const actualResult = userService.getOne(findOneOptions);
+
+      expect(userRepository.findOne).toHaveBeenCalledWith(findOneOptions);
+      await expect(actualResult).rejects.toThrowError(TypeORMError);
     });
   });
 });

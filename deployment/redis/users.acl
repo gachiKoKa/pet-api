@@ -1,0 +1,2 @@
+user petapi on >test123 ~* +@all
+user default off ~* -@all
