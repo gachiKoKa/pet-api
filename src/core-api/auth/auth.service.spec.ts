@@ -50,10 +50,15 @@ describe('AuthService', () => {
   });
 
   describe('validateUser', () => {
-    it('should return the user if email and password are correct', async () => {
-      const email = 'test@test.com';
-      const password = '123';
+    let email: string;
+    let password: string;
 
+    beforeEach(() => {
+      email = 'test@test.com';
+      password = '123';
+    });
+
+    it('should return the user if email and password are correct', async () => {
       jest.spyOn(userService, 'getOne').mockResolvedValueOnce(user);
       // @ts-ignore
       jest.spyOn(bcrypt, 'compare').mockReturnValueOnce(true);
@@ -66,9 +71,6 @@ describe('AuthService', () => {
     });
 
     it('should return null if passwords do not match', async () => {
-      const email = 'test@test.com';
-      const password = '134';
-
       jest.spyOn(userService, 'getOne').mockResolvedValueOnce(user);
       // @ts-ignore
       jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
@@ -81,9 +83,6 @@ describe('AuthService', () => {
     });
 
     it('should return null if user not found', async () => {
-      const email = 't@t.com';
-      const password = '134';
-
       jest.spyOn(userService, 'getOne').mockResolvedValueOnce(undefined);
 
       const actualResult = await authService.validateUser(email, password);
@@ -94,14 +93,19 @@ describe('AuthService', () => {
   });
 
   describe('registerUser', () => {
-    it('should return a new user', async () => {
-      const registerUserDto: RegisterUserDto = {
+    let registerUserDto: RegisterUserDto;
+
+    beforeEach(() => {
+      registerUserDto = {
         firstName: 'test',
         lastName: 'case',
         phoneNumber: '+380911231212',
         password: '123',
         email: 'test@test.com',
       };
+    });
+
+    it('should return a new user', async () => {
       const expectedResult = { token: 'hashedPassword', user };
 
       jest.spyOn(userService, 'create').mockResolvedValueOnce(user);
@@ -118,14 +122,6 @@ describe('AuthService', () => {
     });
 
     it('should throw an error during register user', async () => {
-      const registerUserDto: RegisterUserDto = {
-        firstName: 'test',
-        lastName: 'case',
-        phoneNumber: '+380911231212',
-        password: '123',
-        email: 'test@test.com',
-      };
-
       jest
         .spyOn(userService, 'create')
         .mockRejectedValueOnce(new BadRequestException());

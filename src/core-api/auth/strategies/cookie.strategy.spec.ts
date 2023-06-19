@@ -31,9 +31,10 @@ describe('CookieStrategy', () => {
     user = {
       id: 1,
       email: 'test@test.com',
-      phoneNumber: '+38 (096) 123-12-12',
+      phoneNumber: '+380961231212',
       firstName: 'test',
       lastName: 'case',
+      password: '$2a$12$tTEUft9NjfKa/eHoiUeJr.n9VZ4VSW5fZIGkdFvRlPiyn/DYbLv.1',
     } as User;
   });
 
