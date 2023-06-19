@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UpdateUserDto, User, UserRepository } from '@shared';
+import { User, UserRepository } from '@shared';
 import { DeepPartial, FindManyOptions, FindOneOptions } from 'typeorm';
 
 @Injectable()
@@ -16,21 +16,20 @@ export class UserService {
     return this._userRepository.find(options);
   }
 
-  public async getOne(options: FindOneOptions<User>): Promise<User> {
-    return this._findOne(options);
-  }
-
-  public async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this._findOne({ where: { id } });
+  public async update(
+    id: number,
+    entityLike: DeepPartial<User>,
+  ): Promise<User> {
+    const user = await this.getOne({ where: { id } });
     const updatedEntity = this._userRepository.create({
       ...user,
-      ...updateUserDto,
+      ...entityLike,
     });
 
     return this._userRepository.save(updatedEntity);
   }
 
-  private async _findOne(options: FindOneOptions<User>): Promise<User> {
+  public async getOne(options: FindOneOptions<User>): Promise<User> {
     const user = await this._userRepository.findOne(options);
 
     if (!user) {
