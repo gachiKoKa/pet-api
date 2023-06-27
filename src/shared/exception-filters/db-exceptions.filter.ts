@@ -6,7 +6,7 @@ export class DbExceptionsFilter implements ExceptionFactory {
   constructor(private readonly _error: TypeError) {}
 
   private readonly _statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-  prepareErrorMessage(): ExceptionResponse {
+  public prepareErrorMessage(): ExceptionResponse {
     return {
       code: this._statusCode,
       message: this._error.message,
