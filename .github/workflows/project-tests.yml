@@ -1,9 +1,10 @@
-name: tests
-run-name: tests
+name: run tests on the project
+run-name: run tests on the project
 on:
   pull_request:
     branches:
       - develop
+      - master
 jobs:
   execute-unit-tests:
     runs-on: ubuntu-latest
